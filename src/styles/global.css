@@ -1,0 +1,156 @@
+/* ============================================================
+   全局样式 — 亮色简约主题
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC',
+               -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f8f9fb;
+  color: #1a1a2e;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+/* ===== Leaflet 弹窗覆写（亮色） ===== */
+.leaflet-popup-content-wrapper {
+  background: #fff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+  padding: 0 !important;
+}
+.leaflet-popup-content { margin: 0 !important; color: #1a1a2e; }
+.leaflet-popup-tip { background: #fff !important; }
+.leaflet-popup-close-button {
+  color: #9ca3af !important;
+  top: 8px !important;
+  right: 8px !important;
+  font-size: 18px !important;
+}
+.leaflet-popup-close-button:hover { color: #2563eb !important; }
+.leaflet-control-attribution { display: none !important; }
+
+/* 弹窗内容 */
+.map-popup {
+  padding: 14px 16px;
+  min-width: 200px;
+}
+.popup-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-left: 8px;
+  margin-bottom: 8px;
+}
+.popup-index {
+  font-size: 16px;
+  font-weight: 900;
+  color: #d1d5db;
+  font-family: 'Arial Black', sans-serif;
+  flex-shrink: 0;
+}
+.popup-title { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+.popup-subtitle { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+.popup-stat { display: flex; align-items: baseline; gap: 3px; margin-bottom: 3px; }
+.popup-num { font-size: 24px; font-weight: 900; font-family: 'Arial Black', sans-serif; }
+.popup-unit { font-size: 12px; color: #6b7280; }
+.popup-desc { font-size: 11px; color: #9ca3af; margin-bottom: 10px; }
+.popup-btn {
+  display: block; width: 100%; padding: 7px 12px;
+  border: none; border-radius: 8px; color: white;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: opacity 0.15s;
+}
+.popup-btn:hover { opacity: 0.85; }
+
+/* ===== 自定义标记 ===== */
+.custom-marker { background: none !important; border: none !important; }
+.custom-marker.selected { z-index: 9999 !important; }
+
+/* ===== 滚动条 ===== */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
+
+/* ===== 全屏滚动 ===== */
+.fullpage-wrapper {
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+.fp-section {
+  height: 100vh;
+  scroll-snap-align: start;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== 动画工具 ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes bounce-arrow {
+  0%, 100% { transform: translateY(0) rotate(45deg); }
+  50%       { transform: translateY(6px) rotate(45deg); }
+}
+@keyframes count-up {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ===== 各屏背景色 ===== */
+.variant-1 { background: #f9f4ee; }
+.variant-2 { background: #f9f4ee; }
+.variant-3 { background: #f9f4ee; }
+.variant-4 { background: #f9f4ee; }
+.variant-5 { background: #f9f4ee; }
+.variant-6 { background: #f9f4ee; }
+
+/* ===== 各屏卡片布局变体 ===== */
+
+/* variant-2: 右侧卡片下移 */
+.variant-2 .cards-grid.cols-2 > *:nth-child(2) { align-self: end; }
+
+/* variant-3: 中间卡片上移 */
+.variant-3 .cards-grid.cols-3 > *:nth-child(2) { margin-top: -28px; }
+
+/* variant-4: 卡片居中，最大宽度限制 */
+.variant-4 .cards-grid.cols-2 {
+  max-width: 780px;
+  margin: 0 auto;
+  align-items: center;
+}
+.variant-4 .cards-grid.cols-2 > *:nth-child(1) { transform: translateY(-20px); }
+.variant-4 .cards-grid.cols-2 > *:nth-child(2) { transform: translateY(20px); }
+
+/* variant-5: 首列更宽（featured layout） */
+.variant-5 .cards-grid.cols-3 {
+  grid-template-columns: 44% 1fr 1fr;
+}
+.variant-5 .cards-grid.cols-3 > *:nth-child(1) { align-self: stretch; }
+
+/* variant-6: 2×2 紧凑网格 */
+.variant-6 .cards-grid.cols-4 {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 14px;
+}
+
+/* ===== 地图标记标签（不在 scoped 内，全局覆写） ===== */
+.custom-marker .leaflet-div-icon { background: none; border: none; }
+

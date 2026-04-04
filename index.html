@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="人民日报十五五专题·中国发展成就交互式故事地图，展示16个重大里程碑成就" />
+    <meta name="keywords" content="十五五,中国成就,故事地图,人民日报,发展成就" />
+    <title>十五五·中国成就故事地图 — 人民日报</title>
+    <!-- 预连接瓦片地图服务 -->
+    <link rel="preconnect" href="https://a.basemaps.cartocdn.com" />
+    <link rel="preconnect" href="https://b.basemaps.cartocdn.com" />
+    <style>
+      html, body { margin: 0; padding: 0; background: #050810; overflow: hidden; }
+      /* 首屏骨架屏防白屏 */
+      #app:empty::before {
+        content: '';
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        background: #050810;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
