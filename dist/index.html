@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="人民日报十五五专题·中国发展成就交互式故事地图，展示16个重大里程碑成就" />
+    <meta name="keywords" content="十五五,中国成就,故事地图,人民日报,发展成就" />
+    <title>十五五·中国成就故事地图 — 人民日报</title>
+    <!-- 预连接瓦片地图服务 -->
+    <link rel="preconnect" href="https://a.basemaps.cartocdn.com" />
+    <link rel="preconnect" href="https://b.basemaps.cartocdn.com" />
+    <style>
+      html, body { margin: 0; padding: 0; background: #0A0E1A; }
+      /* 首屏骨架屏防白屏 */
+      #app:empty::before {
+        content: '';
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(160deg, #0A0E1A 0%, #1A1A2E 50%, #2C1A0A 100%);
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-BGgYrfFt.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-Dw2cE7zH.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-ui-B-i0js3O.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-chart-DcSDebr5.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-anim-D3qQSBRS.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-map-DyKGaYAj.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-vue-Bi7eVqmG.js">
+    <link rel="stylesheet" crossorigin href="/assets/vendor-ui-CtXWf5sU.css">
+    <link rel="stylesheet" crossorigin href="/assets/vendor-map-vh-t_kPv.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-CLllGc-C.css">
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
