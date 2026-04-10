@@ -5,7 +5,7 @@ import store from './store'
 import './styles/global.css'
 import App from './App.vue'
 
-createApp(App)
-  .use(store)
-  .use(ElementPlus)
-  .mount('#app')
+const app = createApp(App)
+app.use(store)
+app.use(ElementPlus)
+app.mount('#app')

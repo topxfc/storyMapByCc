@@ -93,10 +93,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['fendouzhe', 'electricity']
   },
 
-  // ── 03 中国空间站 ── Nov 2022
+  // ── 15 中国空间站 ── Nov 2022
   {
     id: 'spacestation',
-    index: 3,
+    index: 15,
     title: '中国空间站',
     subtitle: '距地面约400公里的太空家园',
     category: 'aerospace',
@@ -185,10 +185,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['spacestation', 'tianwen']
   },
 
-  // ── 05 福建舰 ── Sep 2024
+  // ── 03 福建舰 ── Sep 2024
   {
     id: 'fujian',
-    index: 5,
+    index: 3,
     title: '福建舰',
     subtitle: '中国第三艘航空母舰',
     category: 'defense',
@@ -235,10 +235,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['cr450']
   },
 
-  // ── 06 CR450动车组 ── Nov 2024
+  // ── 10 CR450动车组 ── Nov 2024
   {
     id: 'cr450',
-    index: 6,
+    index: 10,
     title: 'CR450动车组',
     subtitle: '时速创纪录453公里/小时',
     category: 'transport',
@@ -281,10 +281,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['railway', 'c919']
   },
 
-  // ── 07 住房3米层高标准 ── Mar 2025
+  // ── 05 住房3米层高标准 ── Mar 2025
   {
     id: 'housing',
-    index: 7,
+    index: 5,
     title: '住房3米层高标准',
     subtitle: '提升居民居住品质新规',
     category: 'livelihood',
@@ -371,10 +371,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['boxoffice', 'lowaltitude']
   },
 
-  // ── 09 贵州花江峡谷大桥 ── May 2025
+  // ── 13 贵州花江峡谷大桥 ── May 2025
   {
     id: 'bridge',
-    index: 9,
+    index: 13,
     title: '贵州花江峡谷大桥',
     subtitle: '世界第一高桥建成通车',
     category: 'transport',
@@ -416,10 +416,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['railway', 'cr450']
   },
 
-  // ── 10 天问二号 ── May 2025
+  // ── 16 天问二号 ── May 2025
   {
     id: 'tianwen',
-    index: 10,
+    index: 16,
     title: '天问二号',
     subtitle: '与地球距离约4300万公里',
     category: 'aerospace',
@@ -462,10 +462,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['spacestation', 'jinping']
   },
 
-  // ── 11 C919 ── Jun 2025
+  // ── 12 C919 ── Jun 2025
   {
     id: 'c919',
-    index: 11,
+    index: 12,
     title: 'C919',
     subtitle: '累计承运旅客突破100万人次',
     category: 'aerospace',
@@ -509,10 +509,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['tianwen', 'cr450']
   },
 
-  // ── 12 人形机器人功夫模式 ── Aug 2025
+  // ── 07 人形机器人功夫模式 ── Aug 2025
   {
     id: 'robot',
-    index: 12,
+    index: 7,
     title: '人形机器人功夫模式',
     subtitle: '人机对练新里程碑',
     category: 'tech',
@@ -554,10 +554,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['lowaltitude', 'c919']
   },
 
-  // ── 13 中国电影票房 ── Dec 2025
+  // ── 06 中国电影票房 ── Dec 2025
   {
     id: 'boxoffice',
-    index: 13,
+    index: 6,
     title: '中国电影票房',
     subtitle: '2025年度总票房超518亿',
     category: 'culture',
@@ -600,10 +600,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['sports', 'lowaltitude']
   },
 
-  // ── 14 铁路营业里程 ── Dec 2025
+  // ── 11 铁路营业里程 ── Dec 2025
   {
     id: 'railway',
-    index: 14,
+    index: 11,
     title: '铁路营业里程',
     subtitle: '全国铁路里程达16.5万公里',
     category: 'transport',
@@ -646,10 +646,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['cr450', 'bridge']
   },
 
-  // ── 15 低空经济 ── Dec 2025
+  // ── 09 低空经济 ── Dec 2025
   {
     id: 'lowaltitude',
-    index: 15,
+    index: 9,
     title: '低空经济',
     subtitle: '2025年市场规模达1.5万亿元',
     category: 'economy',
@@ -697,10 +697,10 @@ export const achievements: Achievement[] = [
     relatedIds: ['robot', 'cr450']
   },
 
-  // ── 16 全社会用电量 ── Dec 2025
+  // ── 14 全社会用电量 ── Dec 2025
   {
     id: 'electricity',
-    index: 16,
+    index: 14,
     title: '全社会用电量',
     subtitle: '2025年超10万亿千瓦时',
     category: 'energy',

@@ -1,277 +1,226 @@
 <template>
   <div class="app-root">
-    <!-- 常驻顶部导航 -->
-    <StickyNav ref="navRef" />
+    <!-- 顶部固定导航 -->
+    <StoryNav
+      :chapters="navChapters"
+      :currentId="currentChapterId"
+      @goto="scrollToId"
+    />
 
-    <!-- 右侧圆点导航 -->
-    <NavDots :sections="dotLabels" :current="currentSection" @goto="gotoSection" />
+    <!-- 全局滚动容器（非 snap，自由滚动叙事） -->
+    <main class="story-scroll">
 
-    <!-- 全局固定时间轴 -->
-    <TimelineBar :show="timelineShow" :active-ids="timelineActiveIds" />
+      <!-- 1. 开篇封面页 -->
+      <CoverPage @scroll-down="scrollToId('preface')" />
 
-    <!-- 全屏滚动容器 -->
-    <div class="fullpage-wrapper" ref="wrapperEl" @scroll="onScroll">
+      <!-- 2. 序章 -->
+      <PrefaceSection @goto-chapter="scrollToId" />
 
-      <!-- 第 0 屏：英雄地图屏 -->
-      <HeroSection @scroll-down="gotoSection(1)" />
+      <!-- 3. 主体16个成就章节 -->
+      <!-- Ch01 奋斗者号 -->
+      <ChapterPage :chapter="getAch(1)" id="chapter-1">
+        <template #showcase><Ch01Fendouzhe /></template>
+      </ChapterPage>
 
-      <!-- 第 1-6 屏：成就故事屏 -->
-      <AchievementSection
-        v-for="(grp, i) in screenGroups"
-        :key="i"
-        :achievements="grp.items"
-        :section-title="grp.title"
-        :variant="i + 1"
-      />
+      <!-- Ch02 深海一号 -->
+      <ChapterPage :chapter="getAch(2)" id="chapter-2">
+        <template #showcase><Ch02Deepseaone /></template>
+      </ChapterPage>
 
-      <!-- 最后一屏：总结 -->
-      <section class="fp-section summary-section">
-        <div class="summary-inner">
-          <div class="summary-eyebrow">2021 — 2025</div>
-          <h2 class="summary-title">中国，向前</h2>
-          <p class="summary-desc">
-            深海之底、苍穹之上、山河之间——<br/>
-            每一个数字背后，都是无数人的奋斗与创造。
-          </p>
-          <div class="summary-grid">
-            <div v-for="a in allAchievements" :key="a.id" class="summary-dot-item" @click="openUrl(a.url)">
-              <div class="sdot" :style="`background:${getColor(a.category)}`">{{ a.index }}</div>
-              <span class="sdot-title">{{ a.title }}</span>
-            </div>
-          </div>
-          <button class="back-top-btn" @click="gotoSection(0)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              width="16" height="16"><path d="M18 15l-6-6-6 6"/></svg>
-            回到顶部
-          </button>
-        </div>
-      </section>
-    </div>
+      <!-- Ch03 福建舰 -->
+      <ChapterPage :chapter="getAch(3)" id="chapter-3">
+        <template #showcase><Ch03Fujian /></template>
+      </ChapterPage>
+
+      <!-- Ch04 锦屏大设施 -->
+      <ChapterPage :chapter="getAch(4)" id="chapter-4">
+        <template #showcase><Ch04Jinping /></template>
+      </ChapterPage>
+
+      <!-- Ch05 住房标准 -->
+      <ChapterPage :chapter="getAch(5)" id="chapter-5">
+        <template #showcase><Ch05Housing /></template>
+      </ChapterPage>
+
+      <!-- Ch06 电影票房 -->
+      <ChapterPage :chapter="getAch(6)" id="chapter-6">
+        <template #showcase><Ch06Boxoffice /></template>
+      </ChapterPage>
+
+      <!-- Ch07 人形机器人 -->
+      <ChapterPage :chapter="getAch(7)" id="chapter-7">
+        <template #showcase><Ch07Robot /></template>
+      </ChapterPage>
+
+      <!-- Ch08 苏超 -->
+      <ChapterPage :chapter="getAch(8)" id="chapter-8">
+        <template #showcase><Ch08Sports /></template>
+      </ChapterPage>
+
+      <!-- Ch09 低空经济 -->
+      <ChapterPage :chapter="getAch(9)" id="chapter-9">
+        <template #showcase><Ch09LowAltitude /></template>
+      </ChapterPage>
+
+      <!-- Ch10 CR450 -->
+      <ChapterPage :chapter="getAch(10)" id="chapter-10">
+        <template #showcase><Ch10CR450 /></template>
+      </ChapterPage>
+
+      <!-- Ch11 铁路里程 -->
+      <ChapterPage :chapter="getAch(11)" id="chapter-11">
+        <template #showcase><Ch11Railway /></template>
+      </ChapterPage>
+
+      <!-- Ch12 C919 -->
+      <ChapterPage :chapter="getAch(12)" id="chapter-12">
+        <template #showcase><Ch12C919 /></template>
+      </ChapterPage>
+
+      <!-- Ch13 花江峡谷大桥 -->
+      <ChapterPage :chapter="getAch(13)" id="chapter-13">
+        <template #showcase><Ch13Bridge /></template>
+      </ChapterPage>
+
+      <!-- Ch14 用电量 -->
+      <ChapterPage :chapter="getAch(14)" id="chapter-14">
+        <template #showcase><Ch14Electricity /></template>
+      </ChapterPage>
+
+      <!-- Ch15 空间站（深色主题） -->
+      <ChapterPage :chapter="getAch(15)" :isDark="true" id="chapter-15">
+        <template #showcase><Ch15SpaceStation /></template>
+      </ChapterPage>
+
+      <!-- Ch16 天问二号（深色主题） -->
+      <ChapterPage :chapter="getAch(16)" :isDark="true" id="chapter-16">
+        <template #showcase><Ch16Tianwen /></template>
+      </ChapterPage>
+
+      <!-- 4. 终章 -->
+      <FinaleSection />
+
+      <!-- 5. 结尾页 -->
+      <CreditsFooter />
+
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useStore } from 'vuex'
-import StickyNav from './components/StickyNav.vue'
-import NavDots from './components/NavDots.vue'
-import HeroSection from './components/HeroSection.vue'
-import AchievementSection from './components/AchievementSection.vue'
-import TimelineBar from './components/TimelineBar.vue'
+import type { Achievement } from './types'
 import { categoryColors } from './data/achievements'
-import type { Achievement, AchievementCategory } from './types'
+
+// 页面组件
+import StoryNav from './components/StoryNav.vue'
+import CoverPage from './components/CoverPage.vue'
+import PrefaceSection from './components/PrefaceSection.vue'
+import ChapterPage from './components/ChapterPage.vue'
+import FinaleSection from './components/FinaleSection.vue'
+import CreditsFooter from './components/CreditsFooter.vue'
+
+// 16个章节专属展示组件
+import Ch01Fendouzhe from './components/chapters/Ch01Fendouzhe.vue'
+import Ch02Deepseaone from './components/chapters/Ch02Deepseaone.vue'
+import Ch03Fujian from './components/chapters/Ch03Fujian.vue'
+import Ch04Jinping from './components/chapters/Ch04Jinping.vue'
+import Ch05Housing from './components/chapters/Ch05Housing.vue'
+import Ch06Boxoffice from './components/chapters/Ch06Boxoffice.vue'
+import Ch07Robot from './components/chapters/Ch07Robot.vue'
+import Ch08Sports from './components/chapters/Ch08Sports.vue'
+import Ch09LowAltitude from './components/chapters/Ch09LowAltitude.vue'
+import Ch10CR450 from './components/chapters/Ch10CR450.vue'
+import Ch11Railway from './components/chapters/Ch11Railway.vue'
+import Ch12C919 from './components/chapters/Ch12C919.vue'
+import Ch13Bridge from './components/chapters/Ch13Bridge.vue'
+import Ch14Electricity from './components/chapters/Ch14Electricity.vue'
+import Ch15SpaceStation from './components/chapters/Ch15SpaceStation.vue'
+import Ch16Tianwen from './components/chapters/Ch16Tianwen.vue'
 
 const store = useStore()
-const wrapperEl = ref<HTMLElement>()
-const navRef = ref<InstanceType<typeof StickyNav>>()
-const currentSection = ref(0)
-
 const allAchievements = computed<Achievement[]>(() => store.state.achievements)
-const selectedId = computed<string>(() => store.state.selectedId)
+const currentChapterId = ref('cover')
 
-// 全局固定时间轴：只在首屏隐藏，切屏时自动更新
-const timelineShow = computed(() => currentSection.value > 0 && currentSection.value <= screenGroups.length)
-const timelineActiveIds = computed<string[]>(() => {
-  const gi = currentSection.value - 1
-  if (gi >= 0 && gi < screenGroups.length) {
-    return screenGroups[gi].items.map((a: Achievement) => a.id)
+// 根据 index 获取成就数据
+function getAch(index: number): Achievement {
+  return allAchievements.value.find(a => a.index === index)!
+}
+
+// 导航章节列表
+const navChapters = computed(() => {
+  const chapters = [
+    { id: 'cover', number: '', title: '封面', color: '#CC0000' },
+    { id: 'preface', number: '序', title: '新征程·新跨越', color: '#1A5CFF' }
+  ]
+  allAchievements.value.forEach(a => {
+    chapters.push({
+      id: `chapter-${a.index}`,
+      number: String(a.index).padStart(2, '0'),
+      title: a.title,
+      subtitle: a.subtitle,
+      color: categoryColors[a.category] || '#CC0000'
+    })
+  })
+  chapters.push(
+    { id: 'finale', number: '终', title: '中国·向前', color: '#CC0000' },
+    { id: 'credits', number: '', title: '致谢', color: '#888' }
+  )
+  return chapters
+})
+
+// 滚动到指定 ID
+function scrollToId(id: string) {
+  const el = document.getElementById(id)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
-  return allAchievements.value.map((a: Achievement) => a.id)
-})
-
-// 6个故事屏分组（按时间顺序）
-const screenGroups = [
-  { title: '深海 · 探索', items: [] as Achievement[] },       // 2020—2021
-  { title: '科学 · 突破', items: [] as Achievement[] },       // 2022—2023
-  { title: '国防 · 速度', items: [] as Achievement[] },       // 2024
-  { title: '民生 · 体育 · 基建', items: [] as Achievement[] }, // 2025 Q1—Q2
-  { title: '深空 · 航空 · 科技', items: [] as Achievement[] }, // 2025 Q2—Q3
-  { title: '文化 · 经济 · 能源', items: [] as Achievement[] }  // 2025 Q4
-]
-
-const groupAssign = [
-  [1, 2],          // 屏1: 奋斗者号(Nov 2020)、深海一号(Jun 2021)
-  [3, 4],          // 屏2: 空间站(Nov 2022)、锦屏大设施(Dec 2023)
-  [5, 6],          // 屏3: 福建舰(Sep 2024)、CR450(Nov 2024)
-  [7, 8, 9],       // 屏4: 住房标准(Mar 2025)、苏超(Apr 2025)、花江大桥(May 2025)
-  [10, 11, 12],    // 屏5: 天问二号(May 2025)、C919(Jun 2025)、人形机器人(Aug 2025)
-  [13, 14, 15, 16] // 屏6: 电影票房、铁路、低空经济、用电量(Dec 2025)
-]
-
-// 根据 index 分配
-groupAssign.forEach((indices, gi) => {
-  screenGroups[gi].items = allAchievements.value.filter(a => indices.includes(a.index))
-})
-
-const dotLabels = ['成就总览', ...screenGroups.map(g => g.title), '中国·向前']
-
-// 点击地图标记"查看详情"时，跳转到对应故事屏
-watch(selectedId, (id) => {
-  if (!id) return
-  const achievement = allAchievements.value.find(a => a.id === id)
-  if (!achievement) return
-  const sectionIdx = groupAssign.findIndex(indices => indices.includes(achievement.index))
-  if (sectionIdx !== -1) {
-    setTimeout(() => gotoSection(sectionIdx + 1), 200) // +1 跳过首屏
-  }
-})
-
-function getColor(cat: AchievementCategory) {
-  return categoryColors[cat] || '#2563eb'
 }
 
-function openUrl(url: string) {
-  if (url) window.open(url, '_blank', 'noopener,noreferrer')
-}
-
-function gotoSection(index: number) {
-  if (!wrapperEl.value) return
-  const sections = wrapperEl.value.querySelectorAll<HTMLElement>('.fp-section')
-  sections[index]?.scrollIntoView({ behavior: 'smooth' })
-}
-
+// 滚动检测当前章节
 function onScroll() {
-  if (!wrapperEl.value) return
-  navRef.value?.onScroll(wrapperEl.value.scrollTop)
+  const scrollY = window.scrollY + window.innerHeight / 3
+  const sections = document.querySelectorAll<HTMLElement>('[id^="chapter-"], #preface, #finale, #credits')
 
-  // 计算当前屏
-  const sections = wrapperEl.value.querySelectorAll<HTMLElement>('.fp-section')
-  const scrollTop = wrapperEl.value.scrollTop
-  const height = wrapperEl.value.clientHeight
-  sections.forEach((el, i) => {
-    const top = el.offsetTop - scrollTop
-    if (top <= height / 2 && top > -height / 2) {
-      currentSection.value = i
+  // 如果在最顶部
+  if (window.scrollY < window.innerHeight * 0.5) {
+    currentChapterId.value = 'cover'
+    return
+  }
+
+  let found = false
+  sections.forEach(section => {
+    const top = section.offsetTop
+    const bottom = top + section.offsetHeight
+    if (scrollY >= top && scrollY < bottom) {
+      currentChapterId.value = section.id
+      found = true
     }
   })
-}
-
-// 键盘导航
-function onKeydown(e: KeyboardEvent) {
-  const total = screenGroups.length + 2
-  if (e.key === 'ArrowDown' || e.key === 'PageDown') {
-    gotoSection(Math.min(currentSection.value + 1, total - 1))
-  }
-  if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-    gotoSection(Math.max(currentSection.value - 1, 0))
+  if (!found && window.scrollY > document.documentElement.scrollHeight - window.innerHeight - 200) {
+    currentChapterId.value = 'credits'
   }
 }
 
 onMounted(() => {
-  window.addEventListener('keydown', onKeydown)
+  window.addEventListener('scroll', onScroll, { passive: true })
 })
 onUnmounted(() => {
-  window.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('scroll', onScroll)
 })
 </script>
 
-<style scoped>
+<style>
 .app-root {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  background: #f8f9fb;
-  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-}
-
-/* 总结屏 */
-.summary-section {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 52px 48px 40px;
-}
-
-.summary-inner {
-  max-width: 860px;
   width: 100%;
-  text-align: center;
+  min-height: 100vh;
+  background: var(--bg-warm);
+  font-family: var(--font-cn);
 }
 
-.summary-eyebrow {
-  font-size: 12px;
-  color: #4b9ef5;
-  letter-spacing: 3px;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.summary-title {
-  font-size: 56px;
-  font-weight: 900;
-  color: white;
-  margin-bottom: 12px;
-  letter-spacing: 4px;
-}
-
-.summary-desc {
-  font-size: 15px;
-  color: #94a3b8;
-  line-height: 2;
-  margin-bottom: 32px;
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 12px;
-  margin-bottom: 36px;
-}
-
-.summary-dot-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-
-.sdot {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 800;
-  color: white;
-  font-family: 'Arial Black', sans-serif;
-  transition: transform 0.2s;
-}
-.sdot:hover { transform: scale(1.2); }
-
-.sdot-title {
-  font-size: 10px;
-  color: #64748b;
-  text-align: center;
-  max-width: 56px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.back-top-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 24px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 24px;
-  color: #94a3b8;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.back-top-btn:hover {
-  background: rgba(255,255,255,0.15);
-  color: white;
-}
-
-@media (max-width: 767px) {
-  .summary-grid { grid-template-columns: repeat(4, 1fr); }
-  .summary-title { font-size: 36px; }
+.story-scroll {
+  width: 100%;
+  overflow-x: hidden;
 }
 </style>
