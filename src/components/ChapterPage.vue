@@ -298,51 +298,23 @@ onUnmounted(() => {
       rgba(170,185,195,0.35) 100%);
 }
 
-/* 渐变遮罩：仅底部淡出过渡，上方保留完整图片 */
+/* 渐变遮罩：轻微暗化让文字可读，不遮挡图片主体 */
 .parallax-overlay {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(
-      to bottom,
-      transparent 0%,
-      transparent 55%,
-      rgba(245,242,236,0.4) 75%,
-      rgba(245,242,236,0.85) 90%,
-      rgba(245,242,236,1) 100%
-    );
+  background: rgba(0,0,0,0.25);
   pointer-events: none;
   z-index: 1;
 }
-.chapter-page:nth-child(even) .parallax-overlay {
-  background:
-    linear-gradient(
-      to bottom,
-      transparent 0%,
-      transparent 55%,
-      rgba(255,249,240,0.4) 75%,
-      rgba(255,249,240,0.85) 90%,
-      rgba(255,249,240,1) 100%
-    );
-}
 
-/* ── 内容层 ── */
+/* ── 内容层（全透明，背景图始终穿透可见） ── */
 .ch-content-layer {
   position: relative;
   z-index: 2;
-  /*
-    不用负 margin！
-    背景占 100vh sticky，内容紧随其后自然排列。
-    滚动时：先看到完整一屏背景 → 继续滚动内容从底部升起覆盖背景。
-  */
   padding-top: 60px;
   padding-bottom: 80px;
   min-height: 60vh;
-  /* 内容区自带背景色，遮住下方的 sticky 背景 */
-  background: var(--bg-warm);
-}
-.chapter-page:nth-child(even) .ch-content-layer {
-  background: var(--bg-section);
+  background: transparent;
 }
 /* 深色主题没有背景图层，正常排列 */
 .chapter-dark .ch-content-layer {
@@ -356,7 +328,7 @@ onUnmounted(() => {
   padding: 0 48px;
 }
 
-/* ── 章节头 ── */
+/* ── 章节头（背景图上的白色文字） ── */
 .ch-header {
   margin-bottom: 32px;
 }
@@ -365,27 +337,29 @@ onUnmounted(() => {
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 3px;
-  color: var(--china-red);
+  color: rgba(255,255,255,0.8);
   text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
-.chapter-dark .ch-number { color: var(--tech-cyan); }
+.chapter-dark .ch-number { color: var(--tech-cyan); text-shadow: none; }
 
 .ch-title {
   font-size: 48px;
   font-weight: 900;
-  color: var(--text-primary);
+  color: #FFFFFF;
   line-height: 1.2;
   letter-spacing: 2px;
   margin: 12px 0;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
 }
-.chapter-dark .ch-title { color: #FFFFFF; }
 
 .ch-subtitle {
   font-size: 18px;
-  color: var(--text-secondary);
+  color: rgba(255,255,255,0.8);
   line-height: 1.6;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
-.chapter-dark .ch-subtitle { color: var(--silver-gray); }
+.chapter-dark .ch-subtitle { color: var(--silver-gray); text-shadow: none; }
 
 /* ── 核心数字 ── */
 .ch-hero-stat {
@@ -400,24 +374,37 @@ onUnmounted(() => {
   font-weight: 900;
   font-family: var(--font-num);
   line-height: 1;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.4);
 }
 .stat-unit {
   font-size: 24px;
-  color: var(--text-secondary);
+  color: rgba(255,255,255,0.85);
   font-weight: 500;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 .stat-desc {
   width: 100%;
   font-size: 16px;
-  color: var(--text-muted);
+  color: rgba(255,255,255,0.7);
   margin-top: 4px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
-.chapter-dark .stat-unit { color: var(--silver-gray); }
-.chapter-dark .stat-desc { color: rgba(255,255,255,0.4); }
+.chapter-dark .stat-unit { color: var(--silver-gray); text-shadow: none; }
+.chapter-dark .stat-desc { color: rgba(255,255,255,0.4); text-shadow: none; }
 
-/* ── 展示区 ── */
+/* ── 展示区（半透明卡片） ── */
 .ch-showcase {
   margin-bottom: 48px;
+  padding: 24px;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+}
+.chapter-dark .ch-showcase {
+  background: rgba(0,0,0,0.5);
+  border-color: rgba(255,255,255,0.06);
 }
 
 /* ── 正文区 ── */
@@ -432,6 +419,15 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 32px;
+}
+/* 叙事块：半透明卡片 */
+.narrative-block {
+  padding: 20px 24px;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 .narrative-block h3 {
   font-size: 18px;
@@ -448,6 +444,10 @@ onUnmounted(() => {
   height: 16px;
   background: var(--china-red);
   border-radius: 2px;
+}
+.chapter-dark .narrative-block {
+  background: rgba(0,0,0,0.5);
+  border-color: rgba(255,255,255,0.06);
 }
 .chapter-dark .narrative-block h3 { color: #FFFFFF; }
 .chapter-dark .narrative-block h3::before { background: var(--tech-cyan); }
@@ -469,16 +469,16 @@ onUnmounted(() => {
 }
 .sidebar-card {
   padding: 24px;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(10px);
   border-radius: 14px;
-  border: 1px solid rgba(0,0,0,0.04);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 .chapter-dark .sidebar-card {
-  background: rgba(255,255,255,0.04);
+  background: rgba(0,0,0,0.5);
   border-color: rgba(255,255,255,0.06);
-  backdrop-filter: none;
+  backdrop-filter: blur(10px);
 }
 .sidebar-card h4 {
   font-size: 15px;
