@@ -110,11 +110,11 @@ const progress = ref(0)
 const visitedIds = ref(new Set<string>())
 let lastScrollY = 0
 
-// 只取16个成就章节（number 为 01-16 的）
+// 只取16个成就章节（number 为 01-16 的），按编号排序
 const achievementChapters = computed(() => {
-  const total = props.chapters.length // cover + preface + 16 + finale + credits = ~20
   return props.chapters
     .filter(ch => /^\d{2}$/.test(ch.number))
+    .sort((a, b) => parseInt(a.number) - parseInt(b.number))
     .map((ch, i, arr) => ({
       ...ch,
       // 每个成就在进度条上的位置百分比
@@ -221,12 +221,11 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   overflow-x: auto;
   scrollbar-width: none;
   padding: 4px 0;
-  -webkit-mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
-  mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
 }
 .nav-icons::-webkit-scrollbar { display: none; }
 
