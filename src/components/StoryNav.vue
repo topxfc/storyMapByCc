@@ -1,72 +1,85 @@
 <template>
   <nav class="story-nav" :class="{ scrolled: isScrolled, hidden: isHidden }">
     <div class="nav-inner">
-      <!-- 左侧 Logo + 标题 -->
-      <div class="nav-brand" @click="scrollToTop">
+      <!-- 左侧 Logo -->
+      <div class="nav-brand" @click="goTo('cover')">
         <div class="brand-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="#CC0000" stroke-width="2"/>
-            <path d="M12 6v6l4 2" stroke="#CC0000" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="12" cy="12" r="3" fill="#CC0000" opacity="0.3"/>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </div>
         <span class="brand-text">十五五 · 中国成就</span>
       </div>
 
-      <!-- 中间 当前章节标题 -->
-      <div class="nav-current" v-if="currentChapter">
-        <span class="current-num">{{ currentChapter.number }}</span>
-        <span class="current-title">{{ currentChapter.title }}</span>
-      </div>
+      <!-- 中间 图标导航条 -->
+      <div class="nav-icons" ref="iconsEl">
+        <!-- 封面按钮 -->
+        <button
+          class="icon-btn cover-btn"
+          :class="{ active: currentId === 'cover' }"
+          @click="goTo('cover')"
+          title="封面"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 0 0 .7-1.7l-9-9a1 1 0 0 0-1.4 0l-9 9A1 1 0 0 0 3 13z"/>
+          </svg>
+        </button>
 
-      <!-- 右侧 章节菜单按钮 -->
-      <div class="nav-actions">
-        <button class="nav-menu-btn" @click="menuOpen = !menuOpen" :class="{ active: menuOpen }">
-          <svg v-if="!menuOpen" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 12h18M3 6h18M3 18h18"/>
+        <span class="icon-sep"></span>
+
+        <!-- 16 个成就图标 -->
+        <button
+          v-for="ch in achievementChapters"
+          :key="ch.id"
+          class="icon-btn ach-btn"
+          :class="{
+            active: currentId === ch.id,
+            visited: visitedIds.has(ch.id),
+            passed: isPassed(ch.id)
+          }"
+          :style="currentId === ch.id ? `--btn-c:${ch.color}` : ''"
+          @click="goTo(ch.id)"
+          :title="`${ch.number} ${ch.title}`"
+        >
+          <span class="btn-index">{{ ch.number }}</span>
+          <!-- 底部小圆点指示器 -->
+          <span
+            class="btn-dot"
+            :style="`background:${ch.color}`"
+          ></span>
+        </button>
+
+        <span class="icon-sep"></span>
+
+        <!-- 终章按钮 -->
+        <button
+          class="icon-btn end-btn"
+          :class="{ active: currentId === 'finale' || currentId === 'credits' }"
+          @click="goTo('finale')"
+          title="终章"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
           </svg>
-          <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 6 6 18M6 6l12 12"/>
-          </svg>
-          <span class="menu-label">{{ menuOpen ? '关闭' : '章节' }}</span>
         </button>
       </div>
     </div>
 
-    <!-- 进度条 -->
+    <!-- 进度条 —— 分段式，每个章节一段 -->
     <div class="nav-progress">
       <div class="progress-fill" :style="`width:${progress}%`"></div>
-    </div>
-
-    <!-- 章节菜单 -->
-    <Transition name="menu-slide">
-      <div class="chapter-menu" v-if="menuOpen" @click.self="menuOpen = false">
-        <div class="menu-inner">
-          <div class="menu-header">
-            <h3>章节导航</h3>
-            <span class="menu-progress">{{ Math.round(progress) }}% 已阅读</span>
-          </div>
-          <div class="menu-list">
-            <button
-              v-for="ch in chapters"
-              :key="ch.id"
-              class="menu-item"
-              :class="{ active: currentId === ch.id, visited: visitedIds.has(ch.id) }"
-              @click="goToChapter(ch.id)"
-            >
-              <span class="item-num" :style="currentId === ch.id ? `background:${ch.color || '#CC0000'}` : ''">
-                {{ ch.number }}
-              </span>
-              <div class="item-info">
-                <span class="item-title">{{ ch.title }}</span>
-                <span class="item-sub" v-if="ch.subtitle">{{ ch.subtitle }}</span>
-              </div>
-              <span class="item-check" v-if="visitedIds.has(ch.id)">✓</span>
-            </button>
-          </div>
-        </div>
+      <!-- 章节刻度点 -->
+      <div class="progress-ticks">
+        <span
+          v-for="ch in achievementChapters"
+          :key="ch.id"
+          class="tick"
+          :class="{ reached: isPassed(ch.id) || currentId === ch.id }"
+          :style="`left:${ch.progressPos}%`"
+        ></span>
       </div>
-    </Transition>
+    </div>
   </nav>
 </template>
 
@@ -90,27 +103,48 @@ const emit = defineEmits<{
   (e: 'goto', id: string): void
 }>()
 
+const iconsEl = ref<HTMLElement>()
 const isScrolled = ref(false)
 const isHidden = ref(false)
-const menuOpen = ref(false)
 const progress = ref(0)
 const visitedIds = ref(new Set<string>())
 let lastScrollY = 0
 
-const currentChapter = computed(() =>
-  props.chapters.find(ch => ch.id === props.currentId)
-)
+// 只取16个成就章节（number 为 01-16 的）
+const achievementChapters = computed(() => {
+  const total = props.chapters.length // cover + preface + 16 + finale + credits = ~20
+  return props.chapters
+    .filter(ch => /^\d{2}$/.test(ch.number))
+    .map((ch, i, arr) => ({
+      ...ch,
+      // 每个成就在进度条上的位置百分比
+      progressPos: ((i + 1) / (arr.length + 1)) * 100
+    }))
+})
+
+// 判断某章节是否已经"路过"（在当前章节之前）
+function isPassed(id: string) {
+  const allIds = props.chapters.map(c => c.id)
+  const curIdx = allIds.indexOf(props.currentId)
+  const targetIdx = allIds.indexOf(id)
+  return targetIdx < curIdx && targetIdx >= 0
+}
 
 watch(() => props.currentId, (id) => {
   if (id) visitedIds.value.add(id)
+  // 自动滚动图标条让当前项可见
+  scrollIconIntoView(id)
 })
 
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+function scrollIconIntoView(id: string) {
+  if (!iconsEl.value) return
+  const btn = iconsEl.value.querySelector(`.ach-btn.active, .cover-btn.active, .end-btn.active`) as HTMLElement
+  if (btn) {
+    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }
 }
 
-function goToChapter(id: string) {
-  menuOpen.value = false
+function goTo(id: string) {
   emit('goto', id)
 }
 
@@ -119,7 +153,7 @@ function onScroll() {
   const docH = document.documentElement.scrollHeight - window.innerHeight
 
   isScrolled.value = scrollY > 60
-  isHidden.value = scrollY > lastScrollY && scrollY > 300 && !menuOpen.value
+  isHidden.value = scrollY > lastScrollY && scrollY > 300
   lastScrollY = scrollY
 
   progress.value = docH > 0 ? (scrollY / docH) * 100 : 0
@@ -136,11 +170,9 @@ onUnmounted(() => {
 <style scoped>
 .story-nav {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   z-index: 1000;
-  background: rgba(255,255,255,0.0);
+  background: rgba(255,255,255,0);
   backdrop-filter: blur(0px);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(0);
@@ -148,101 +180,175 @@ onUnmounted(() => {
 .story-nav.scrolled {
   background: rgba(255,255,255,0.92);
   backdrop-filter: blur(20px);
-  box-shadow: 0 1px 24px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 20px rgba(0,0,0,0.06);
 }
 .story-nav.hidden {
   transform: translateY(-100%);
 }
 
+/* ── 内部布局 ── */
 .nav-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 16px;
   height: var(--nav-height);
-  padding: 0 24px;
+  padding: 0 20px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
+/* ── 左侧品牌 ── */
 .nav-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   flex-shrink: 0;
+  color: var(--text-primary);
+  transition: color 0.3s;
 }
 .brand-icon { display: flex; align-items: center; }
 .brand-text {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: 1px;
-  transition: color 0.3s;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }
-.story-nav:not(.scrolled) .brand-text { color: rgba(255,255,255,0.9); }
-.story-nav:not(.scrolled) .brand-icon svg circle { stroke: rgba(255,255,255,0.8); }
-.story-nav:not(.scrolled) .brand-icon svg path { stroke: rgba(255,255,255,0.8); }
+.story-nav:not(.scrolled) .nav-brand { color: rgba(255,255,255,0.85); }
 
-.nav-current {
+/* ── 中间图标导航 ── */
+.nav-icons {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
-  transition: opacity 0.3s;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px 0;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
+  mask-image: linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent);
 }
-.current-num {
+.nav-icons::-webkit-scrollbar { display: none; }
+
+.icon-sep {
+  width: 1px;
+  height: 20px;
+  background: rgba(0,0,0,0.08);
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+.story-nav:not(.scrolled) .icon-sep { background: rgba(255,255,255,0.15); }
+
+/* ── 图标按钮通用 ── */
+.icon-btn {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,0.08);
+  background: rgba(0,0,0,0.02);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  color: var(--text-muted);
+  font-family: var(--font-cn);
+  padding: 0;
+}
+.icon-btn:hover {
+  background: rgba(0,0,0,0.06);
+  border-color: rgba(0,0,0,0.15);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+/* 未滚动（封面深色背景）时的样式 */
+.story-nav:not(.scrolled) .icon-btn {
+  border-color: rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.5);
+}
+.story-nav:not(.scrolled) .icon-btn:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.9);
+}
+
+/* ── 成就按钮编号 ── */
+.btn-index {
   font-size: 11px;
   font-weight: 800;
-  color: var(--china-red);
   font-family: var(--font-num);
-  letter-spacing: 1px;
-  padding: 2px 8px;
-  background: rgba(204,0,0,0.06);
-  border-radius: 4px;
-}
-.current-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.story-nav:not(.scrolled) .current-num {
-  color: rgba(255,255,255,0.8);
-  background: rgba(255,255,255,0.1);
-}
-.story-nav:not(.scrolled) .current-title { color: rgba(255,255,255,0.8); }
-
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  line-height: 1;
 }
 
-.nav-menu-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: rgba(0,0,0,0.04);
-  border: 1px solid rgba(0,0,0,0.06);
-  border-radius: 24px;
-  font-size: 13px;
+/* ── 底部颜色小圆点 ── */
+.btn-dot {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.icon-btn:hover .btn-dot,
+.icon-btn.active .btn-dot,
+.icon-btn.visited .btn-dot {
+  opacity: 1;
+}
+
+/* ── 当前激活态 ── */
+.icon-btn.active {
+  background: var(--btn-c, var(--china-red));
+  border-color: var(--btn-c, var(--china-red));
+  color: white;
+  transform: scale(1.15);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+.icon-btn.active .btn-dot { opacity: 0; }
+
+.story-nav:not(.scrolled) .icon-btn.active {
+  background: var(--btn-c, var(--china-red));
+  border-color: var(--btn-c, var(--china-red));
+  color: white;
+}
+
+/* ── 已访问态 ── */
+.icon-btn.visited:not(.active) {
+  border-color: rgba(0,0,0,0.12);
   color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: var(--font-cn);
 }
-.nav-menu-btn:hover { background: rgba(0,0,0,0.08); }
-.nav-menu-btn.active { background: var(--china-red); color: white; border-color: var(--china-red); }
-.story-nav:not(.scrolled) .nav-menu-btn {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.8);
+.story-nav:not(.scrolled) .icon-btn.visited:not(.active) {
+  border-color: rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.7);
 }
-.menu-label { font-weight: 500; }
 
-/* 进度条 */
+/* ── 已路过态（在当前章节之前） ── */
+.icon-btn.passed:not(.active) {
+  border-color: rgba(0,0,0,0.1);
+  background: rgba(0,0,0,0.03);
+  color: var(--text-secondary);
+}
+
+/* ── 封面/终章按钮 ── */
+.cover-btn.active,
+.end-btn.active {
+  --btn-c: var(--china-red);
+}
+
+/* ── 进度条 ── */
 .nav-progress {
+  position: relative;
   height: 2px;
   background: rgba(0,0,0,0.04);
+}
+.story-nav:not(.scrolled) .nav-progress {
+  background: rgba(255,255,255,0.06);
 }
 .progress-fill {
   height: 100%;
@@ -251,122 +357,33 @@ onUnmounted(() => {
   border-radius: 0 1px 1px 0;
 }
 
-/* 章节菜单 */
-.chapter-menu {
-  position: fixed;
+/* 进度条刻度点 */
+.progress-ticks {
+  position: absolute;
   inset: 0;
-  top: var(--nav-height);
-  background: rgba(0,0,0,0.3);
-  z-index: 999;
-  display: flex;
-  justify-content: flex-end;
+  pointer-events: none;
 }
-.menu-inner {
-  width: 380px;
-  max-width: 100%;
-  height: 100%;
-  background: white;
-  box-shadow: -8px 0 40px rgba(0,0,0,0.12);
-  overflow-y: auto;
-  padding: 24px;
+.tick {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.1);
+  transition: all 0.3s;
 }
-.menu-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-}
-.menu-header h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-.menu-progress {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-family: var(--font-num);
-}
-.menu-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-align: left;
-  font-family: var(--font-cn);
-  width: 100%;
-}
-.menu-item:hover { background: rgba(0,0,0,0.03); }
-.menu-item.active {
-  background: rgba(204,0,0,0.04);
-  border-color: rgba(204,0,0,0.1);
-}
-.item-num {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--text-muted);
-  background: rgba(0,0,0,0.04);
-  font-family: var(--font-num);
-  flex-shrink: 0;
-  transition: all 0.2s;
-}
-.menu-item.active .item-num { color: white; }
-.item-info { flex: 1; min-width: 0; }
-.item-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.item-sub {
-  font-size: 12px;
-  color: var(--text-muted);
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.item-check {
-  font-size: 12px;
-  color: #27ae60;
-  flex-shrink: 0;
+.story-nav:not(.scrolled) .tick { background: rgba(255,255,255,0.1); }
+.tick.reached {
+  background: var(--china-red);
+  box-shadow: 0 0 4px rgba(204,0,0,0.3);
 }
 
-/* Transition */
-.menu-slide-enter-active { transition: all 0.3s ease; }
-.menu-slide-leave-active { transition: all 0.25s ease; }
-.menu-slide-enter-from,
-.menu-slide-leave-to {
-  opacity: 0;
-}
-.menu-slide-enter-from .menu-inner,
-.menu-slide-leave-to .menu-inner {
-  transform: translateX(100%);
-}
-
+/* ── 响应式 ── */
 @media (max-width: 767px) {
-  .nav-current { display: none; }
-  .brand-text { font-size: 14px; }
-  .menu-inner { width: 100%; }
+  .brand-text { display: none; }
+  .icon-btn { width: 30px; height: 30px; }
+  .btn-index { font-size: 10px; }
+  .nav-inner { padding: 0 10px; gap: 8px; }
 }
 </style>
