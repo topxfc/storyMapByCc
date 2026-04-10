@@ -8,8 +8,14 @@
     <!-- 视差固定背景层（Ch15/16深色主题不使用背景图） -->
     <div class="ch-parallax-bg" v-if="!isDark">
       <div class="parallax-img" :style="parallaxStyle">
-        <!-- 占位背景图 -->
-        <div class="bg-placeholder">
+        <!-- 有真实图片时显示图片，否则显示占位 -->
+        <img
+          v-if="bgLoaded"
+          :src="bgSrc"
+          :alt="`${chapter.title} 背景`"
+          class="bg-real-img"
+        />
+        <div v-else class="bg-placeholder">
           <span class="bg-placeholder-text">
             {{ chapter.title }} · 背景图<br/>
             建议分辨率: 1920×1080<br/>
@@ -133,6 +139,17 @@ const displayNum = ref(props.chapter.heroStat)
 
 const accentColor = computed(() => categoryColors[props.chapter.category] || '#CC0000')
 
+// 背景图加载
+const bgSrc = computed(() => `/assets/images/bg-${String(props.chapter.index).padStart(2, '0')}.jpg`)
+const bgLoaded = ref(false)
+
+function probeImage() {
+  if (props.isDark) return
+  const img = new Image()
+  img.onload = () => { bgLoaded.value = true }
+  img.src = bgSrc.value
+}
+
 // 背景图视差偏移量（滚动时缓慢移动）
 const bgOffsetY = ref(0)
 const parallaxStyle = computed(() => ({
@@ -171,6 +188,7 @@ function animateNumber() {
 
 let observer: IntersectionObserver | null = null
 onMounted(() => {
+  probeImage()
   window.addEventListener('scroll', onScroll, { passive: true })
   onScroll()
 
@@ -228,6 +246,15 @@ onUnmounted(() => {
   inset: -60px 0;        /* 上下多出60px 用于视差位移 */
   will-change: transform;
   transition: transform 0.05s linear;
+}
+
+/* 真实背景图 */
+.bg-real-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 /* 背景图占位（后续替换为真实图片） */
