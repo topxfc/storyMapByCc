@@ -298,17 +298,17 @@ onUnmounted(() => {
       rgba(170,185,195,0.35) 100%);
 }
 
-/* 渐变遮罩：上方淡出 + 下方深色，保证内容可读 */
+/* 渐变遮罩：仅底部淡出过渡，上方保留完整图片 */
 .parallax-overlay {
   position: absolute;
   inset: 0;
   background:
     linear-gradient(
       to bottom,
-      rgba(0,0,0,0.05) 0%,
-      rgba(0,0,0,0.02) 30%,
-      rgba(245,242,236,0.7) 60%,
-      rgba(245,242,236,0.95) 80%,
+      transparent 0%,
+      transparent 55%,
+      rgba(245,242,236,0.4) 75%,
+      rgba(245,242,236,0.85) 90%,
       rgba(245,242,236,1) 100%
     );
   pointer-events: none;
@@ -318,10 +318,10 @@ onUnmounted(() => {
   background:
     linear-gradient(
       to bottom,
-      rgba(0,0,0,0.05) 0%,
-      rgba(0,0,0,0.02) 30%,
-      rgba(255,249,240,0.7) 60%,
-      rgba(255,249,240,0.95) 80%,
+      transparent 0%,
+      transparent 55%,
+      rgba(255,249,240,0.4) 75%,
+      rgba(255,249,240,0.85) 90%,
       rgba(255,249,240,1) 100%
     );
 }
@@ -330,11 +330,19 @@ onUnmounted(() => {
 .ch-content-layer {
   position: relative;
   z-index: 2;
-  /* 负 margin 让内容层向上覆盖背景区的下半部分 */
-  margin-top: -45vh;
-  padding-top: 20px;
+  /*
+    不用负 margin！
+    背景占 100vh sticky，内容紧随其后自然排列。
+    滚动时：先看到完整一屏背景 → 继续滚动内容从底部升起覆盖背景。
+  */
+  padding-top: 60px;
   padding-bottom: 80px;
   min-height: 60vh;
+  /* 内容区自带背景色，遮住下方的 sticky 背景 */
+  background: var(--bg-warm);
+}
+.chapter-page:nth-child(even) .ch-content-layer {
+  background: var(--bg-section);
 }
 /* 深色主题没有背景图层，正常排列 */
 .chapter-dark .ch-content-layer {
@@ -526,14 +534,12 @@ onUnmounted(() => {
   .ch-title { font-size: 36px; }
   .stat-num { font-size: 56px; }
   .chapter-container { padding: 0 24px; }
-  .ch-content-layer { margin-top: -35vh; }
 }
 @media (max-width: 767px) {
   .ch-title { font-size: 28px; }
   .stat-num { font-size: 42px; }
   .stat-unit { font-size: 18px; }
   .chapter-container { padding: 0 16px; }
-  .ch-content-layer { margin-top: -30vh; }
-  .ch-parallax-bg { height: 70vh; }
+  .ch-parallax-bg { height: 75vh; }
 }
 </style>
