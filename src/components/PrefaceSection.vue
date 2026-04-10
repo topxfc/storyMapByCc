@@ -130,6 +130,8 @@ onUnmounted(() => observer?.disconnect())
   padding: 120px 0 80px;
   background: var(--bg-warm);
   overflow: hidden;
+  /* 确保自身不透出上一章的 sticky 背景 */
+  z-index: 1;
 }
 .preface-section::before {
   content: '';

@@ -114,6 +114,7 @@ onUnmounted(() => observer?.disconnect())
 .finale-section {
   position: relative;
   background: var(--bg-warm);
+  z-index: 1;
 }
 
 /* Hero */

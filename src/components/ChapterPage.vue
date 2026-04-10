@@ -1,34 +1,24 @@
 <template>
   <section
     class="chapter-page"
-    :class="[`chapter-${chapter.index}`, { 'chapter-dark': isDark }]"
+    :class="[`chapter-${chapter.index}`, { 'chapter-dark': isDark, 'has-bg': !isDark }]"
     :id="`chapter-${chapter.index}`"
+    :style="sectionBgStyle"
     ref="sectionEl"
   >
-    <!-- 视差固定背景层（Ch15/16深色主题不使用背景图） -->
-    <div class="ch-parallax-bg" v-if="!isDark">
-      <div class="parallax-img" :style="parallaxStyle">
-        <!-- 有真实图片时显示图片，否则显示占位 -->
-        <img
-          v-if="bgLoaded"
-          :src="bgSrc"
-          :alt="`${chapter.title} 背景`"
-          class="bg-real-img"
-        />
-        <div v-else class="bg-placeholder">
-          <span class="bg-placeholder-text">
-            {{ chapter.title }} · 背景图<br/>
-            建议分辨率: 1920×1080<br/>
-            格式: JPG/WebP<br/>
-            位置: /public/assets/images/bg-{{ String(chapter.index).padStart(2, '0') }}.jpg
-          </span>
-        </div>
-      </div>
-      <!-- 渐变遮罩：让文字可读 -->
-      <div class="parallax-overlay"></div>
+    <!-- 暗化遮罩（有背景图时） -->
+    <div class="ch-overlay" v-if="!isDark"></div>
+
+    <!-- 没有背景图时显示占位提示 -->
+    <div class="bg-placeholder-banner" v-if="!isDark && !bgLoaded">
+      <span class="bg-placeholder-text">
+        {{ chapter.title }} · 背景图<br/>
+        建议分辨率: 1920×1080 · 格式: JPG/WebP<br/>
+        位置: /public/assets/images/bg-{{ String(chapter.index).padStart(2, '0') }}.jpg
+      </span>
     </div>
 
-    <!-- 内容层（叠在背景之上滚动） -->
+    <!-- 内容层 -->
     <div class="ch-content-layer">
       <div class="chapter-container">
         <!-- 章节头部 -->
@@ -74,7 +64,6 @@
 
           <!-- 侧边栏 -->
           <div class="ch-sidebar scroll-reveal" ref="sidebarRef">
-            <!-- 技术突破 -->
             <div class="sidebar-card">
               <h4>关键技术突破</h4>
               <ul class="tech-list">
@@ -82,7 +71,6 @@
               </ul>
             </div>
 
-            <!-- 发展时间线 -->
             <div class="sidebar-card">
               <h4>发展历程</h4>
               <div class="mini-timeline">
@@ -94,12 +82,10 @@
               </div>
             </div>
 
-            <!-- 图表 -->
             <div class="sidebar-card" v-if="chapter.chart">
               <AchievementChart :config="chapter.chart" :color="accentColor" />
             </div>
 
-            <!-- 标签 -->
             <div class="tag-list">
               <span v-for="tag in chapter.tags" :key="tag" class="tag-item">{{ tag }}</span>
             </div>
@@ -139,7 +125,7 @@ const displayNum = ref(props.chapter.heroStat)
 
 const accentColor = computed(() => categoryColors[props.chapter.category] || '#CC0000')
 
-// 背景图加载
+// 背景图探测
 const bgSrc = computed(() => `/assets/images/bg-${String(props.chapter.index).padStart(2, '0')}.jpg`)
 const bgLoaded = ref(false)
 
@@ -150,22 +136,17 @@ function probeImage() {
   img.src = bgSrc.value
 }
 
-// 背景图视差偏移量（滚动时缓慢移动）
-const bgOffsetY = ref(0)
-const parallaxStyle = computed(() => ({
-  transform: `translateY(${bgOffsetY.value}px)`
-}))
-
-function onScroll() {
-  if (!sectionEl.value || props.isDark) return
-  const rect = sectionEl.value.getBoundingClientRect()
-  const vh = window.innerHeight
-  // 只在元素可见范围内计算
-  if (rect.bottom > 0 && rect.top < vh) {
-    // 背景以 0.3 倍速度跟随滚动 → 视差效果
-    bgOffsetY.value = -rect.top * 0.3
+// 用 CSS background-attachment:fixed 实现视差
+// 只在图片加载成功后设置背景图
+const sectionBgStyle = computed(() => {
+  if (props.isDark || !bgLoaded.value) return {}
+  return {
+    backgroundImage: `url(${bgSrc.value})`,
+    backgroundAttachment: 'fixed',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
   }
-}
+})
 
 function animateNumber() {
   const raw = props.chapter.heroStat
@@ -189,8 +170,6 @@ function animateNumber() {
 let observer: IntersectionObserver | null = null
 onMounted(() => {
   probeImage()
-  window.addEventListener('scroll', onScroll, { passive: true })
-  onScroll()
 
   observer = new IntersectionObserver(
     (entries) => {
@@ -210,115 +189,66 @@ onMounted(() => {
   })
 })
 onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
   observer?.disconnect()
 })
 </script>
 
 <style scoped>
 /* ═══════════════════════════════════════
-   章节页 — 固定背景视差滚动
-   背景图钉住 → 内容从上方滑入覆盖 →
-   内容滑走后背景才随之离开
+   章节页 — background-attachment:fixed 视差
+   背景图钉在视口不动，内容在上面滚动，
+   背景只在本 section 可视范围内露出。
    ═══════════════════════════════════════ */
 .chapter-page {
   position: relative;
-  /* clip 让固定背景只在本 section 范围内可见 */
-  overflow: clip;
   min-height: 100vh;
+  /* 没有背景图时的底色 */
+  background-color: var(--bg-warm);
 }
 .chapter-page.chapter-dark {
   background: var(--deep-black) !important;
 }
 
-/* ── 视差背景层 ── */
-.ch-parallax-bg {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  height: 100vh;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.parallax-img {
+/* ── 暗化遮罩 ── */
+.ch-overlay {
   position: absolute;
-  inset: -60px 0;        /* 上下多出60px 用于视差位移 */
-  will-change: transform;
-  transition: transform 0.05s linear;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* 真实背景图 */
-.bg-real-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
-/* 背景图占位（后续替换为真实图片） */
-.bg-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 默认渐变底色，将来用 background-image 覆盖 */
-  background:
-    linear-gradient(135deg,
-      rgba(200,190,175,0.6) 0%,
-      rgba(180,170,155,0.4) 50%,
-      rgba(160,150,135,0.6) 100%);
+/* ── 占位提示（没有背景图时） ── */
+.bg-placeholder-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
 }
 .bg-placeholder-text {
-  padding: 32px 40px;
-  background: rgba(255,255,255,0.75);
+  padding: 28px 36px;
+  background: rgba(255,255,255,0.7);
   backdrop-filter: blur(4px);
-  border-radius: 16px;
-  font-size: 14px;
-  color: #666;
+  border-radius: 14px;
+  font-size: 13px;
+  color: #888;
   text-align: center;
   line-height: 1.8;
   font-weight: 500;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
 }
 
-/* 奇偶章节不同底色渐变 */
-.chapter-page:nth-child(odd) .bg-placeholder {
-  background:
-    linear-gradient(160deg,
-      rgba(210,195,175,0.5) 0%,
-      rgba(190,180,165,0.35) 100%);
-}
-.chapter-page:nth-child(even) .bg-placeholder {
-  background:
-    linear-gradient(160deg,
-      rgba(185,200,210,0.5) 0%,
-      rgba(170,185,195,0.35) 100%);
-}
-
-/* 渐变遮罩：轻微暗化让文字可读，不遮挡图片主体 */
-.parallax-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.25);
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* ── 内容层（全透明，背景图始终穿透可见） ── */
+/* ── 内容层（全透明） ── */
 .ch-content-layer {
   position: relative;
   z-index: 2;
-  padding-top: 60px;
+  padding-top: 100px;
   padding-bottom: 80px;
-  min-height: 60vh;
-  background: transparent;
+  min-height: 100vh;
 }
-/* 深色主题没有背景图层，正常排列 */
 .chapter-dark .ch-content-layer {
-  margin-top: 0;
   padding-top: 100px;
 }
 
@@ -328,7 +258,7 @@ onUnmounted(() => {
   padding: 0 48px;
 }
 
-/* ── 章节头（背景图上的白色文字） ── */
+/* ── 章节头（白色文字 + 阴影） ── */
 .ch-header {
   margin-bottom: 32px;
 }
@@ -337,9 +267,9 @@ onUnmounted(() => {
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 3px;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255,255,255,0.85);
   text-transform: uppercase;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
 }
 .chapter-dark .ch-number { color: var(--tech-cyan); text-shadow: none; }
 
@@ -350,14 +280,14 @@ onUnmounted(() => {
   line-height: 1.2;
   letter-spacing: 2px;
   margin: 12px 0;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 16px rgba(0,0,0,0.6);
 }
 
 .ch-subtitle {
   font-size: 18px;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255,255,255,0.85);
   line-height: 1.6;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
 }
 .chapter-dark .ch-subtitle { color: var(--silver-gray); text-shadow: none; }
 
@@ -374,37 +304,38 @@ onUnmounted(() => {
   font-weight: 900;
   font-family: var(--font-num);
   line-height: 1;
-  text-shadow: 0 2px 16px rgba(0,0,0,0.4);
+  text-shadow: 0 2px 16px rgba(0,0,0,0.5);
 }
 .stat-unit {
   font-size: 24px;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255,255,255,0.9);
   font-weight: 500;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
 }
 .stat-desc {
   width: 100%;
   font-size: 16px;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255,255,255,0.75);
   margin-top: 4px;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 .chapter-dark .stat-unit { color: var(--silver-gray); text-shadow: none; }
 .chapter-dark .stat-desc { color: rgba(255,255,255,0.4); text-shadow: none; }
 
-/* ── 展示区（半透明卡片） ── */
+/* ── 展示区（毛玻璃卡片） ── */
 .ch-showcase {
   margin-bottom: 48px;
   padding: 24px;
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.5);
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 .chapter-dark .ch-showcase {
-  background: rgba(0,0,0,0.5);
-  border-color: rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.55);
+  border-color: rgba(255,255,255,0.08);
 }
 
 /* ── 正文区 ── */
@@ -418,16 +349,18 @@ onUnmounted(() => {
 .ch-narrative {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
 }
-/* 叙事块：半透明卡片 */
+
+/* 叙事块：毛玻璃卡片 */
 .narrative-block {
   padding: 20px 24px;
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.5);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
 }
 .narrative-block h3 {
   font-size: 18px;
@@ -446,8 +379,8 @@ onUnmounted(() => {
   border-radius: 2px;
 }
 .chapter-dark .narrative-block {
-  background: rgba(0,0,0,0.5);
-  border-color: rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.55);
+  border-color: rgba(255,255,255,0.08);
 }
 .chapter-dark .narrative-block h3 { color: #FFFFFF; }
 .chapter-dark .narrative-block h3::before { background: var(--tech-cyan); }
@@ -465,20 +398,20 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 24px;
   position: sticky;
-  top: 100px;
+  top: 80px;
 }
 .sidebar-card {
   padding: 24px;
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.5);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
 }
 .chapter-dark .sidebar-card {
-  background: rgba(0,0,0,0.5);
-  border-color: rgba(255,255,255,0.06);
-  backdrop-filter: blur(10px);
+  background: rgba(0,0,0,0.55);
+  border-color: rgba(255,255,255,0.08);
 }
 .sidebar-card h4 {
   font-size: 15px;
@@ -522,6 +455,28 @@ onUnmounted(() => {
 }
 .chapter-dark .tl-event { color: rgba(255,255,255,0.55); }
 
+/* ── 标签（毛玻璃） ── */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tag-item {
+  font-size: 13px;
+  padding: 4px 14px;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.4);
+}
+.chapter-dark .tag-item {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5);
+  border-color: rgba(255,255,255,0.06);
+}
+
 /* ── 额外内容 ── */
 .ch-extra {
   margin-top: 48px;
@@ -540,6 +495,9 @@ onUnmounted(() => {
   .stat-num { font-size: 42px; }
   .stat-unit { font-size: 18px; }
   .chapter-container { padding: 0 16px; }
-  .ch-parallax-bg { height: 75vh; }
+  /* 移动端 fixed attachment 不生效，降级为 scroll */
+  .chapter-page.has-bg {
+    background-attachment: scroll !important;
+  }
 }
 </style>
