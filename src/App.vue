@@ -7,6 +7,9 @@
       @goto="scrollToId"
     />
 
+    <!-- 全局固定背景层 -->
+    <StoryBackground />
+
     <!-- 全局滚动容器（非 snap，自由滚动叙事） -->
     <main class="story-scroll">
 
@@ -18,9 +21,7 @@
 
       <!-- 3. 主体16个成就章节 -->
       <!-- Ch01 奋斗者号 -->
-      <ChapterPage :chapter="getAch(1)" id="chapter-1">
-        <template #showcase><Ch01Fendouzhe /></template>
-      </ChapterPage>
+      <Ch01Story :chapter="getAch(1)" id="chapter-1" />
 
       <!-- Ch02 深海一号 -->
       <ChapterPage :chapter="getAch(2)" id="chapter-2">
@@ -108,13 +109,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import type { Achievement } from './types'
 import { categoryColors } from './data/achievements'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+gsap.registerPlugin(ScrollTrigger)
 
 // 页面组件
 import StoryNav from './components/StoryNav.vue'
+import StoryBackground from './components/StoryBackground.vue'
 import CoverPage from './components/CoverPage.vue'
 import PrefaceSection from './components/PrefaceSection.vue'
 import ChapterPage from './components/ChapterPage.vue'
@@ -122,7 +128,7 @@ import FinaleSection from './components/FinaleSection.vue'
 import CreditsFooter from './components/CreditsFooter.vue'
 
 // 16个章节专属展示组件
-import Ch01Fendouzhe from './components/chapters/Ch01Fendouzhe.vue'
+import Ch01Story from './components/chapters/Ch01Story.vue'
 import Ch02Deepseaone from './components/chapters/Ch02Deepseaone.vue'
 import Ch03Fujian from './components/chapters/Ch03Fujian.vue'
 import Ch04Jinping from './components/chapters/Ch04Jinping.vue'
@@ -205,9 +211,67 @@ function onScroll() {
 
 onMounted(() => {
   window.addEventListener('scroll', onScroll, { passive: true })
+
+  // ── 背景切换：简单 class 切换 opacity 淡入淡出 ──
+  // 辅助函数：激活指定背景，关闭其他
+  function activateBg(id: string) {
+    document.querySelectorAll('.story-bg-layer').forEach(el => {
+      el.classList.toggle('bg-active', el.id === 'bg-' + id)
+    })
+  }
+
+  nextTick(() => {
+    // 映射：[section DOM id, 背景层 id]
+    const map: [string, string][] = [
+      ['preface',    'preface'],
+      ['chapter-1',  'ch01'],      // Ch01 内部子阶段由 Ch01Story 自行处理
+      ['chapter-2',  'ch02'],
+      ['chapter-3',  'ch03'],
+      ['chapter-4',  'ch04'],
+      ['chapter-5',  'ch05'],
+      ['chapter-6',  'ch06'],
+      ['chapter-7',  'ch07'],
+      ['chapter-8',  'ch08'],
+      ['chapter-9',  'ch09'],
+      ['chapter-10', 'ch10'],
+      ['chapter-11', 'ch11'],
+      ['chapter-12', 'ch12'],
+      ['chapter-13', 'ch13'],
+      ['chapter-14', 'ch14'],
+      ['chapter-15', 'ch15'],
+      ['chapter-16', 'ch16'],
+      ['finale',     'finale'],
+      ['credits',    'credits'],
+    ]
+
+    map.forEach(([sectionId, bgId]) => {
+      const trigger = document.getElementById(sectionId)
+      if (!trigger) return
+      ScrollTrigger.create({
+        trigger,
+        start: 'top center',
+        end: 'bottom center',
+        onEnter: () => activateBg(bgId),
+        onEnterBack: () => activateBg(bgId),
+      })
+    })
+
+    // 封面：回到顶部时恢复
+    ScrollTrigger.create({
+      trigger: document.body,
+      start: 'top top',
+      end: '100px top',
+      onEnterBack: () => activateBg('cover'),
+    })
+
+    // 把 activateBg 暴露给 Ch01Story 使用
+    ;(window as any).__activateBg = activateBg
+  })
 })
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll)
+  ScrollTrigger.getAll().forEach(t => t.kill())
+  delete (window as any).__activateBg
 })
 </script>
 
@@ -215,11 +279,13 @@ onUnmounted(() => {
 .app-root {
   width: 100%;
   min-height: 100vh;
-  background: var(--bg-warm);
+  background: transparent;
   font-family: var(--font-cn);
 }
 
 .story-scroll {
+  position: relative;
+  z-index: 1;
   width: 100%;
   overflow-x: hidden;
 }
